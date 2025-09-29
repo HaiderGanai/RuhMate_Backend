@@ -71,7 +71,7 @@ export class AuthController {
     const encryptedId = encrypt(user.id);
 
     //return a jwt token
-    const token = this.jwtService.sign({ sub: encryptedId });
+    const token = this.jwtService.sign({ id: encryptedId });
 
     return { token };
   }

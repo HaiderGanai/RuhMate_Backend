@@ -23,23 +23,39 @@ export class UserService {
   }
 
   async uploadImages(id: string, files: Express.Multer.File[]) {
-    //prepare image objects from multer's file data
-    const images = files.map((file, index) => ({
-      url: `/uploads/${file.filename}`,
-      isMain: index === 0,
-    }));
+  // get existing images for this user
+  const existingUser = await this.userRepository.query(
+    `SELECT images FROM "user" WHERE id = $1`,
+    [id],
+  );
 
-    // Save user with updated images
-    await this.userRepository.query(
-      `
-  UPDATE "user"
-  SET images = COALESCE(images, '[]'::jsonb) || $2::jsonb
-  WHERE id = $1
-  `,
-      [id, JSON.stringify(images)],
-    );
-    return { message: 'Images Uploaded successfully!' };
+  let existingImages: { url: string; isMain: boolean }[] = [];
+  if (existingUser.length > 0 && existingUser[0].images) {
+    existingImages = existingUser[0].images;
   }
+
+  const alreadyHasMain = existingImages.some(img => img.isMain);
+
+  //prepare new image objects
+  const newImages = files.map((file, index) => ({
+    url: `/uploads/${file.filename}`,
+    // only mark first as main if user doesn't have one already
+    isMain: !alreadyHasMain && index === 0,
+  }));
+
+  // Save user with updated images
+  await this.userRepository.query(
+    `
+    UPDATE "user"
+    SET images = COALESCE(images, '[]'::jsonb) || $2::jsonb
+    WHERE id = $1
+    `,
+    [id, JSON.stringify(newImages)],
+  );
+
+  return { message: 'Images uploaded successfully!' };
+}
+
 
   async setMainImage(id: string, imageUrl: string) {
     //find the user
@@ -66,6 +82,16 @@ export class UserService {
     }));
 
     await this.userRepository.save(user);
+    return user;
+  }
+
+  async getProfile(id: string): Promise<User> {
+    //find the user based on id
+    const user = await this.userRepository.findOne({where:{id}});
+    if(!user) {
+      throw new NotFoundException('Not Found!')
+    }
+
     return user;
   }
 }
