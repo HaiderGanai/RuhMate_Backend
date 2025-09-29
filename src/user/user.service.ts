@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { UpdateProfileDto } from './dto/update-data.dto';
+import type { Cache } from 'cache-manager';
+
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @Inject('CACHE_MANAGER') private cacheManager: Cache
   ) {}
 
   async updateProfile(
@@ -84,14 +87,27 @@ export class UserService {
     await this.userRepository.save(user);
     return user;
   }
+  
 
   async getProfile(id: string): Promise<User> {
-    //find the user based on id
+    //get the user from the cache store
+    const cachedUser = await this.cacheManager.get<User>(`profile:${id}`);
+    if(cachedUser) {
+      console.log("found user from the cached store")
+      return cachedUser;
+    }
+    //else get the user from the db
     const user = await this.userRepository.findOne({where:{id}});
     if(!user) {
-      throw new NotFoundException('Not Found!')
+      throw new NotFoundException('User not found!')
     }
 
+    //store in the cache with 5 min ttl
+    await this.cacheManager.set(`profile:${id}`, user, 300 * 10000); 
+
+    console.log('user not found in cached store, retreiving from db')
+
     return user;
+    
   }
 }
