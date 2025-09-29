@@ -1,14 +1,14 @@
-import { Body, Controller, Patch, Put, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Put, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dto/update-data.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import path from 'path';
-import { EmailVerificationGuard } from 'src/auth/guards/email-verification/email-verification.guards';
+import * as path from 'path';
+
 
 @Controller('user')
-@UseGuards(AuthGuard('jwt'), EmailVerificationGuard)
+@UseGuards(AuthGuard('jwt'))
 export class UserController {
     constructor( private userService: UserService) {}
 
@@ -42,6 +42,14 @@ export class UserController {
         const id = req.user.id;
 
         return this.userService.setMainImage(id, imageUrl);
+    }
+
+    @Get('/profile')
+    async getProfile(@Req() req) {
+        const id = req.user.id;
+
+        return this.userService.getProfile(id);
+
     }
 
 }
