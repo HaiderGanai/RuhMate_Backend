@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { User } from './user/user.entity';
 import { ConfigModule } from '@nestjs/config';
 import * as path from 'path';
+import { CacheModule } from '@nestjs/cache-manager';
+import { redisStore } from 'cache-manager-redis-yet';
 
 const envFilePath = path.resolve(__dirname, '../.env');
 console.log('ENV FILE PATH:', envFilePath);
@@ -29,6 +31,11 @@ console.log('ENV FILE PATH:', envFilePath);
     }),
     AuthModule,
     UserModule,
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 15 *10000,
+      store: redisStore
+    })
   ],
   controllers: [AppController],
   providers: [AppService],
