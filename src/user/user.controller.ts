@@ -5,6 +5,7 @@ import { UpdateProfileDto } from './dto/update-data.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
+import { UploadImagesInterceptor } from 'src/interceptors/upload-images.interceptor';
 
 
 @Controller('user')
@@ -21,17 +22,7 @@ export class UserController {
     }
 
     @Put('/profile/images')
-    @UseInterceptors(
-            FilesInterceptor('images', 100, {
-                storage: diskStorage({
-                    destination: './uploads',
-                    filename: (req, file, callback) => {
-                        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
-                        callback(null, uniqueName);
-                    }
-                })
-            },
-        ))
+    @UseInterceptors(UploadImagesInterceptor('images',100))
     async uploadImages(@Req() req, @UploadedFiles() images: Array<Express.Multer.File>) {
         const id = req.user.id;
         return this.userService.uploadImages(id, images);
