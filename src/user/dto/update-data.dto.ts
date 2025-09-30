@@ -1,25 +1,5 @@
-import {
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsBoolean,
-  IsArray,
-  IsNumber,
-  MaxLength,
-} from 'class-validator';
-import {
-  Education_Level,
-  FAITH_PREFERENCES,
-  Gender,
-  Home_Ownership,
-  Interests,
-  Marital_Status,
-  Personality_Traits,
-  Profile_For,
-  Religion_Practice,
-  ResidenceSize,
-  Sect,
-} from '../user.entity';
+import { IsEnum, IsOptional, IsString, IsBoolean, IsArray, IsNumber, MaxLength } from 'class-validator';
+import { Education_Level, FAITH_PREFERENCES, Gender, Home_Ownership, Interests, Marital_Status, Personality_Traits, Profile_For, Religion_Practice, ResidenceSize, Sect } from '../user.entity';
 
 export class UpdateProfileDto {
   @IsEnum(Profile_For)
