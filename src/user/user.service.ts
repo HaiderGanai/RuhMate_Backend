@@ -1,9 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { UpdateProfileDto } from './dto/update-data.dto';
 import type { Cache } from 'cache-manager';
+import bcrypt from 'node_modules/bcryptjs';
 
 
 @Injectable()
@@ -59,7 +60,6 @@ export class UserService {
   return { message: 'Images uploaded successfully!' };
 }
 
-
   async setMainImage(id: string, imageUrl: string) {
     //find the user
     const user = await this.userRepository.findOne({ where: { id } });
@@ -88,7 +88,6 @@ export class UserService {
     return user;
   }
   
-
   async getProfile(id: string): Promise<User> {
     //get the user from the cache store
     const cachedUser = await this.cacheManager.get<User>(`profile:${id}`);
@@ -109,5 +108,31 @@ export class UserService {
 
     return user;
     
+  }
+
+  async changePassword(id: string, body): Promise<{message: string}> {
+
+    const { password, newPassword } = body;
+
+    //fetch the user from db
+    const user = await this.userRepository.findOne({where:{id}});
+    if(!user) {
+      throw new NotFoundException('User not found!')
+    }
+
+    //compare the password with the one in db
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if(!isPasswordMatch) {
+      throw new BadRequestException('Invalid current password!')
+    }
+
+    //hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    //update in the db
+    await this.userRepository.update({id}, {password: hashedPassword});
+
+    return {message: "Password changed successfully!"}
+
   }
 }

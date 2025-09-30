@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import * as path from 'path';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
+import { LoggingMiddleware } from './middlewares/logging.middleware';
 
 const envFilePath = path.resolve(__dirname, '../.env');
 console.log('ENV FILE PATH:', envFilePath);
@@ -40,4 +41,8 @@ console.log('ENV FILE PATH:', envFilePath);
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+      consumer.apply(LoggingMiddleware).forRoutes('*');
+  }
+}

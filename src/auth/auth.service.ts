@@ -79,7 +79,7 @@ export class AuthService {
     const encryptedId = encrypt(user.id);
 
     //generate a return a new token
-    const token = this.jwtService.sign({ id: encryptedId });
+    const token = this.jwtService.sign({ id: encryptedId }, { expiresIn: '30d'});
     return { token, user };
   }
 
