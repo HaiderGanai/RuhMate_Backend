@@ -1,23 +1,7 @@
-import { IsEnum, IsOptional, IsString, IsBoolean, IsArray, IsNumber, MaxLength } from 'class-validator';
-import { Education_Level, FAITH_PREFERENCES, Gender, Home_Ownership, Interests, Marital_Status, Personality_Traits, Profile_For, Religion_Practice, ResidenceSize, Sect } from '../user.entity';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { Education_Level, FAITH_PREFERENCES, Home_Ownership, Interests, Marital_Status, Personality_Traits, Religion_Practice, ResidenceSize } from '../user.entity';
 
-export class onBoardingProcessDto {
-  @IsEnum(Profile_For)
-  @IsOptional()
-  profile_for?: Profile_For;
-
-  @IsEnum(Gender)
-  @IsOptional()
-  gender?: Gender;
-
-  @IsString()
-  @IsOptional()
-  nick_name?: string;
-
-  @IsEnum(Sect)
-  @IsOptional()
-  sect?: Sect;
-
+export class UpdateProfileDto {
   @IsString()
   @IsOptional()
   profession?: string;
@@ -37,7 +21,7 @@ export class onBoardingProcessDto {
 
   @IsString()
   @IsOptional()
-  homeTown?: string;  //where you grow up
+  homeTown?: string; //where you grow up
 
   @IsString()
   @IsOptional()
