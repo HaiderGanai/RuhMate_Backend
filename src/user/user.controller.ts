@@ -1,9 +1,10 @@
 import { Body, Controller, Get, Patch, Post, Put, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
-import { UpdateProfileDto } from './dto/update-data.dto';
+import { onBoardingProcessDto } from './dto/update-data.dto';
 import { UploadImagesInterceptor } from 'src/interceptors/upload-images.interceptor';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 
 @Controller('user')
@@ -12,11 +13,11 @@ export class UserController {
     constructor( private userService: UserService) {}
 
     @Patch('/profile')
-    async updateProfile(@Body() body: UpdateProfileDto, @Req() req) {
+    async onBoardingProcess(@Body() body: onBoardingProcessDto, @Req() req) {
 
         const id = req.user.id;
 
-        return this.userService.updateProfile(id, body);
+        return this.userService.onBoardingProcess(id, body);
     }
 
     @Put('/profile/images')
@@ -46,6 +47,13 @@ export class UserController {
         const id = req.user.id;
 
         return this.userService.changePassword(id, body);
+    }
+
+    @Patch('/profile/update')
+    async updateProfile(@Body() body: UpdateProfileDto, @Req() req) {
+        const id = req.user.id;
+
+        return this.userService.updateProfile(id, body);
     }
 
 }

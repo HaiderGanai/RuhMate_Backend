@@ -2,9 +2,11 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
-import { UpdateProfileDto } from './dto/update-data.dto';
+import { onBoardingProcessDto } from './dto/update-data.dto';
 import type { Cache } from 'cache-manager';
 import bcrypt from 'node_modules/bcryptjs';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 
 @Injectable()
@@ -15,12 +17,12 @@ export class UserService {
     @Inject('CACHE_MANAGER') private cacheManager: Cache
   ) {}
 
-  async updateProfile(
-    id: string,
-    data: UpdateProfileDto,
-  ): Promise<{ message: string }> {
+  async onBoardingProcess( id: string, data: onBoardingProcessDto ): Promise<{ message: string }> {
     //fetch the user by id
-    await this.userRepository.update(id, { ...data });
+    const result = await this.userRepository.update(id, { ...data });
+    if (result.affected === 0) {
+    throw new NotFoundException('User not found');
+}
 
     //save into db
     return { message: "User's profile updated!" };
@@ -102,7 +104,7 @@ export class UserService {
     }
 
     //store in the cache with 5 min ttl
-    await this.cacheManager.set(`profile:${id}`, user, 300 * 10000); 
+    await this.cacheManager.set(`profile:${id}`, user, 300 * 10000 ); 
 
     console.log('user not found in cached store, retreiving from db')
 
@@ -110,7 +112,7 @@ export class UserService {
     
   }
 
-  async changePassword(id: string, body): Promise<{message: string}> {
+  async changePassword(id: string, body: ChangePasswordDto): Promise<{message: string}> {
 
     const { password, newPassword } = body;
 
@@ -134,5 +136,15 @@ export class UserService {
 
     return {message: "Password changed successfully!"}
 
+  }
+
+  async updateProfile(id, body: UpdateProfileDto): Promise<{message: string}> {
+    //update user by id
+    const result = await this.userRepository.update(id, {...body});
+    if (result.affected === 0) {
+    throw new NotFoundException('User not found');
+}
+
+    return {message: 'Profile updated successfully!'}
   }
 }

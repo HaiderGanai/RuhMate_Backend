@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'node_modules/bcryptjs';
 import { EmailService } from './email.service';
@@ -55,7 +55,7 @@ export class AuthService {
     return { message: 'Verification code sent to the email!' };
   }
 
-  async signIn(data: SignInDto): Promise<{ token: string, user:User }> {
+  async signIn(data: SignInDto): Promise<{ token: string, user:User } | {message: string, user: User}> {
     //check if email exists using userService
     const user = await this.userRepository.findOne({
       where: { email: data.email.trim().toLowerCase() },
@@ -73,6 +73,31 @@ export class AuthService {
 
     if (!isPasswordConfirm) {
       throw new UnauthorizedException('Username or Passwod Incorrect!');
+    }
+
+    //check if email is verified or not
+    if(!user.isEmailVerified) {
+
+      //generate a 5 digit code
+    const verificationCode = Math.floor(10000 + Math.random() * 9000).toString();
+
+    //hash the code
+    const hashCode = crypto.createHash('sha256').update(verificationCode).digest('hex');
+
+    //set the code reset fields
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    //set the purpose
+    const purpose = Purpose.EMAIL;
+
+    //update the db with password resets fields
+    await this.userRepository.update(user.id, {otp: hashCode, otpExpiresAt: otpExpiresAt, purpose: purpose});
+
+    //send email
+    await this.emailService.sendEmail(data.email, verificationCode);
+
+    return { message: 'Email not verified. Code sent to Email!', user };
+
     }
 
     //ENCRYPT THE USERID TO SEND OVER THE JWT

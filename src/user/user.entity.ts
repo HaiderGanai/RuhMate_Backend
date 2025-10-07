@@ -1,5 +1,9 @@
 import { Exclude } from "class-transformer";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+// import { AstrologyProfile } from "../astrology/astrology-profile.entity";
+// import { MatchActions } from "../match-making/match-actions.entity";
+// import { Match } from "../match-making/match.entity";
+// import { UserPreference } from "../user-preference/user-preference.entity";
+import { Column, CreateDateColumn, Entity, ManyToMany, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 //The Profile is for
 export enum Profile_For {
@@ -318,4 +322,31 @@ export class User {
 
     @UpdateDateColumn({ type: 'timestamptz' }) 
     updatedAt: Date;
+
+    //relations
+
+    // //User - UserPreference -- One to One
+    // @OneToOne(() => UserPreference, preferences => preferences.user)
+    // preferences: UserPreference
+
+
+    // //User - MatchAction -- One to Many
+    // @OneToMany(() => MatchActions, matchactions => matchactions.user)
+    // match_actions: MatchActions[]
+
+    
+    // //User - AstrologyProfile -- One to One
+    // @OneToOne(()=>AstrologyProfile, astrologyProfile => astrologyProfile.user)
+    // astrologyProfile: AstrologyProfile
+    
+    // //User - Match -- Many to Many
+    
+    // //Initiator - One to Many
+    // @OneToMany(() => Match, match => match.initiator)
+    // sentMatch: Match[]
+
+    // //receiver - One to Many
+    // @OneToMany(() => Match, match => match.receiver)
+    // receivedMatch: Match[];
+    
 }
