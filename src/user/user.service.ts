@@ -102,7 +102,6 @@ export class UserService {
     if(!user) {
       throw new NotFoundException('User not found!')
     }
-
     //store in the cache with 5 min ttl
     await this.cacheManager.set(`profile:${id}`, user, 300 * 10000 ); 
 

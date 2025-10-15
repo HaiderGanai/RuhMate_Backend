@@ -15,6 +15,7 @@ import {
   Home_Ownership,
 } from '../user/user.entity';
 
+// --- Utility helpers ---
 function getRandomEnumValue<T extends Record<string, string | number>>(enumObj: T): T[keyof T] {
   const values = Object.values(enumObj) as T[keyof T][];
   return values[Math.floor(Math.random() * values.length)];
@@ -27,13 +28,25 @@ function getRandomEnumArray<T extends Record<string, string | number>>(enumObj: 
   return shuffled.slice(0, selectedCount);
 }
 
-
 function getRandomBoolean(): boolean {
   return Math.random() < 0.5;
 }
 
-const randomFromArray = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+function randomFromArray<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
+// ✅ Random date generator (18–50 years old)
+function getRandomDateOfBirth(): Date {
+  const start = new Date();
+  const end = new Date();
+  start.setFullYear(start.getFullYear() - 50);
+  end.setFullYear(end.getFullYear() - 18);
+  const randomTime = start.getTime() + Math.random() * (end.getTime() - start.getTime());
+  return new Date(randomTime);
+}
+
+// --- Static data ---
 const incomeRanges = [
   '$1000 - $2000',
   '$2000 - $4000',
@@ -53,15 +66,18 @@ const nationalities = [
 
 const castes = ['Syed', 'Ansari', 'Mughal', 'Pathan', 'Rajput', 'Sheikh'];
 const professions = ['Engineer', 'Doctor', 'Teacher', 'Designer', 'Developer', 'Lawyer', 'Business Analyst'];
+const languagesList = ['Urdu', 'English', 'Punjabi', 'Arabic', 'French'];
+const religions = ['Islam', 'Christianity', 'Hindu'];
+const city = ['Islamabad', 'Lahore', 'Karachi'];
 
+// --- Seeder function ---
 export async function seedUsers(dataSource: DataSource) {
   const userRepository = dataSource.getRepository(User);
 
-  // Hash password once
   const hashedPassword = await bcrypt.hash('Qwerty123!', 10);
   const users: Partial<User>[] = [];
 
-  for (let i = 1; i <= 30; i++) {
+  for (let i = 1; i <= 15000; i++) {
     const gender = getRandomEnumValue(Gender);
     const fullName = gender === Gender.MALE ? `Test User ${i}` : `Test Lady ${i}`;
 
@@ -69,24 +85,27 @@ export async function seedUsers(dataSource: DataSource) {
       full_name: fullName,
       email: `user${i}@example.com`,
       password: hashedPassword,
+      date_of_birth: getRandomDateOfBirth(),
+      languages: [randomFromArray(languagesList)],
+      city: randomFromArray(city),
+      isPremiumUser: getRandomBoolean(),
+      religion: randomFromArray(religions),
       isEmailVerified: true,
       isPhoneVerified: true,
       profile_for: getRandomEnumValue(Profile_For),
       gender,
       sect: getRandomEnumValue(Sect),
       nick_name: `Tester${i}`,
-      profession: `${randomFromArray(professions)}`,
+      profession: randomFromArray(professions),
       education_level: getRandomEnumValue(Education_Level),
-      images: [
-        { url: `https://picsum.photos/seed/${i}/200`, isMain: true },
-      ],
+      images: [{ url: `https://picsum.photos/seed/${i}/200`, isMain: true }],
       country_code: '+1',
       mobile_number: `12345678${i.toString().padStart(2, '0')}`,
       nationality: randomFromArray(nationalities),
       caste: randomFromArray(castes),
       ethnicity: 'Asian',
       homeTown: randomFromArray(['Lahore', 'Karachi', 'Islamabad', 'Rawalpindi', 'Multan']),
-      height_cm: 150 + Math.floor(Math.random() * 40), // between 150–190 cm
+      height_cm: 150 + Math.floor(Math.random() * 40),
       marital_status: getRandomEnumValue(Marital_Status),
       religion_practice: getRandomEnumValue(Religion_Practice),
       faith_preferences: getRandomEnumArray(FAITH_PREFERENCES),
@@ -103,10 +122,18 @@ export async function seedUsers(dataSource: DataSource) {
       personality_traits: getRandomEnumArray(Personality_Traits, 3),
       bio: `This is a randomly generated bio for ${fullName}. I enjoy ${randomFromArray(Object.values(Interests))}.`,
       purpose: null,
-      moderatorApproved: Math.random() < 0.3, // 30% approved
+      moderatorApproved: Math.random() < 0.3,
     });
   }
 
-  await userRepository.save(users);
-  console.log('✅ 30 Randomized users seeded successfully');
+  // await userRepository.save(users);
+
+//batch the users into chunks to insert
+const batchSize = 100;
+for (let i = 0; i < users.length; i += batchSize) {
+  const batch = users.slice(i, i + batchSize);
+  await userRepository.save(batch); // ✅ Save only the current batch
+  console.log(`Inserted users ${i + 1} to ${Math.min(i + batchSize, users.length)}`);
+}
+  console.log('✅ 15000 Randomized users seeded successfully');
 }

@@ -14,7 +14,6 @@ export async function uploadImages(files: Express.Multer.File[]) {
 console.log("AWS_SECRET_ACCESS_KEY:", process.env.AWS_SECRET_ACCESS_KEY);
 console.log("AWS_REGION:", process.env.AWS_REGION);
 
-
     const uploads = await Promise.all(
       files.map(async (file) => {
         const command = new PutObjectCommand({

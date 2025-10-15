@@ -155,6 +155,18 @@ export class User {
     @Column()
     password: string
 
+    @Column({ nullable: true })
+    date_of_birth: Date
+
+    @Column({type: 'text', nullable: true,  array: true })
+    languages: string[]
+
+    @Column({ nullable: true })
+    city: string
+
+    @Column({ nullable: true })
+    religion: string
+
     @Column({ type: 'varchar', nullable: true })
     otp: string | null
 
@@ -312,6 +324,9 @@ export class User {
 
     @Column({ default: false})
     isPhoneVerified: boolean
+
+    @Column({ default: 'false' })
+    isPremiumUser: boolean
 
     @Column({ default: false})
     moderatorApproved: boolean  //if the profile is approved by admin

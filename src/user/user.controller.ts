@@ -5,6 +5,7 @@ import { onBoardingProcessDto } from './dto/update-data.dto';
 import { UploadImagesInterceptor } from 'src/interceptors/upload-images.interceptor';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { FaceDetectorInterceptor } from 'src/utils/face-detector-mediapipe';
 
 
 @Controller('user')
@@ -21,7 +22,7 @@ export class UserController {
     }
 
     @Put('/profile/images')
-    @UseInterceptors(UploadImagesInterceptor('images',100))
+    @UseInterceptors(UploadImagesInterceptor('images',100), FaceDetectorInterceptor)
     async uploadImages(@Req() req, @UploadedFiles() images: Array<Express.Multer.File>) {
         const id = req.user.id;
         return this.userService.uploadImages(id, images);
